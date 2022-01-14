@@ -13,7 +13,7 @@ type ImageResponseData = {
   description: string;
   url: string;
   ts: number;
-  id: number;
+  id: string;
 };
 
 type GetImagesResponse = {
@@ -54,12 +54,24 @@ export default function Home(): JSX.Element {
   });
 
   const formattedData = useMemo(() => {
-    // TODO FORMAT AND FLAT DATA ARRAY
+    if (!data) {
+      return [];
+    }
+
+    const newFormattedData = data.pages.map(page => page.data);
+
+    return newFormattedData.flat();
   }, [data]);
 
   // TODO RENDER LOADING SCREEN
+  if (isLoading) {
+    return <Loading />;
+  }
 
   // TODO RENDER ERROR SCREEN
+  if (isError) {
+    return <Error />;
+  }
 
   return (
     <>
@@ -67,7 +79,14 @@ export default function Home(): JSX.Element {
 
       <Box maxW={1120} px={20} mx="auto" my={20}>
         <CardList cards={formattedData} />
-        {/* TODO RENDER LOAD MORE BUTTON IF DATA HAS NEXT PAGE */}
+        {
+          /* TODO RENDER LOAD MORE BUTTON IF DATA HAS NEXT PAGE */
+          hasNextPage && (
+            <Button onClick={() => fetchNextPage}>
+              {isFetchingNextPage ? 'Carregando...' : 'Carregar mais'}
+            </Button>
+          )
+        }
       </Box>
     </>
   );
