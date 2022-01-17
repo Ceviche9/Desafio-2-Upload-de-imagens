@@ -50,7 +50,7 @@ export default function Home(): JSX.Element {
     fetchNextPage,
     hasNextPage,
   } = useInfiniteQuery('images', getImagesWithPagination, {
-    getNextPageParam: lastPage => (lastPage.after ? lastPage.after : null),
+    getNextPageParam: lastPage => (lastPage.after ? lastPage?.after : null),
   });
 
   const formattedData = useMemo(() => {
@@ -58,18 +58,18 @@ export default function Home(): JSX.Element {
       return [];
     }
 
-    const newFormattedData = data.pages.map(page => page.data);
+    const newFormattedData = data?.pages.map(page => page.data);
 
     return newFormattedData.flat();
   }, [data]);
 
   // TODO RENDER LOADING SCREEN
-  if (isLoading) {
+  if (isLoading && !isError) {
     return <Loading />;
   }
 
   // TODO RENDER ERROR SCREEN
-  if (isError) {
+  if (!isLoading && isError) {
     return <Error />;
   }
 
