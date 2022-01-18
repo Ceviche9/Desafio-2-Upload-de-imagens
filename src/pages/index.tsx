@@ -16,30 +16,22 @@ type ImageResponseData = {
   id: string;
 };
 
-type GetImagesResponse = {
+type GetImagesResponseProps = {
+  after: string;
   data: ImageResponseData[];
-  after: string | null;
 };
 
 export default function Home(): JSX.Element {
-  /*
-    1. Uma função que recebe como parâmetro um objeto que contêm a propriedade `pageParam`
-    (caso o parâmetro não exista, utilize como `default` o valor `null`). Esse parâmetro
-    é utilizado no momento da requisição para chamarmos uma próxima página.
-    Já no corpo da função, você deve realizar uma requisição GET para a rota `/api/images`
-    da API do Next.js informando como um `query param` de nome `after` o valor do `pageParam`
-    e retornar os dados recebidos.
-  */
-  const getImagesWithPagination = async ({
+  const fetchImages = async ({
     pageParam = null,
-  }): Promise<GetImagesResponse> => {
-    const response = await api.get('/api/images', {
+  }): Promise<GetImagesResponseProps> => {
+    const { data } = await api.get('/api/images', {
       params: {
         after: pageParam,
       },
     });
 
-    return response.data;
+    return data;
   };
 
   const {
@@ -49,18 +41,15 @@ export default function Home(): JSX.Element {
     isFetchingNextPage,
     fetchNextPage,
     hasNextPage,
-  } = useInfiniteQuery('images', getImagesWithPagination, {
-    getNextPageParam: lastPage => (lastPage.after ? lastPage?.after : null),
+  } = useInfiniteQuery('images', fetchImages, {
+    getNextPageParam: lastPage => lastPage?.after || null,
   });
 
   const formattedData = useMemo(() => {
-    if (!data) {
-      return [];
-    }
-
-    const newFormattedData = data?.pages.map(page => page.data);
-
-    return newFormattedData.flat();
+    const formatted = data?.pages.flatMap(imageData => {
+      return imageData.data.flat();
+    });
+    return formatted;
   }, [data]);
 
   // TODO RENDER LOADING SCREEN
@@ -82,7 +71,11 @@ export default function Home(): JSX.Element {
         {
           /* TODO RENDER LOAD MORE BUTTON IF DATA HAS NEXT PAGE */
           hasNextPage && (
-            <Button onClick={() => fetchNextPage}>
+            <Button
+              mt="2"
+              onClick={() => fetchNextPage()}
+              disabled={isFetchingNextPage}
+            >
               {isFetchingNextPage ? 'Carregando...' : 'Carregar mais'}
             </Button>
           )
