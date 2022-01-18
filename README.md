@@ -1,4 +1,4 @@
-# Desafio-2-Upload-de-imagens
+# Desafio Upload de imagens
 
 Desafio da trilha de React do Curso Ignite da Rocketseat.
 
